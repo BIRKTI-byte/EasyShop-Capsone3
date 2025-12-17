@@ -18,26 +18,31 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
         super(dataSource);
     }
 
-    @Override
+    /*@Override
     public List<Product> search(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String subCategory)
     {
         List<Product> products = new ArrayList<>();
-// String sql = "SELECT * FROM products " +
-//             "WHERE (category_id = ? OR ? = -1) " +
-//             "   AND (price <= ? OR ? = -1) " +
-//             "   AND (subcategory = ? OR ? = '') ";
-        String sql = "SELECT * FROM products " +
+String sql = """
+    SELECT * FROM products
+    WHERE (? IS NULL OR category_id = ?)
+      AND (? IS NULL OR price >= ?)
+      AND (? IS NULL OR price <= ?)
+      AND (? IS NULL OR subcategory = ?)
+""";
+
+
+       /* String sql = "SELECT * FROM products " +
                 "WHERE (category_id = ? OR ? = -1) " +
                 "   AND (price >= ? OR ? = -1) " +
                 "   AND (price <= ? OR ? = -1) " +
-                "   AND (subcategory = ? OR ? = '') ";
+                "   AND (subcategory = ? OR ? = '') ";*/
 
-        categoryId = categoryId == null ? -1 : categoryId;
+        /*categoryId = categoryId == null ? -1 : categoryId;
         minPrice = minPrice == null ? new BigDecimal("-1") : minPrice;
         maxPrice = maxPrice == null ? new BigDecimal("-1") : maxPrice;
-        subCategory = subCategory == null ? "" : subCategory;
+        subCategory = subCategory == null ? "" : subCategory;*/
 
-        try (Connection connection = getConnection())
+        /*try (Connection connection = getConnection())
         {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, categoryId);
@@ -61,7 +66,56 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
         }
 
         return products;
+    }*/
+
+    @Override
+    public List<Product> search(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String subCategory)
+    {
+        List<Product> products = new ArrayList<>();
+
+        String sql = """
+        SELECT * FROM products
+        WHERE (? IS NULL OR category_id = ?)
+          AND (? IS NULL OR price >= ?)
+          AND (? IS NULL OR price <= ?)
+          AND (? IS NULL OR subcategory = ?)
+    """;
+
+        try (Connection connection = getConnection())
+        {
+            PreparedStatement statement = connection.prepareStatement(sql);
+
+            // category
+            statement.setObject(1, categoryId);
+            statement.setObject(2, categoryId);
+
+            // min price
+            statement.setObject(3, minPrice);
+            statement.setObject(4, minPrice);
+
+            // max price
+            statement.setObject(5, maxPrice);
+            statement.setObject(6, maxPrice);
+
+            // subcategory
+            statement.setObject(7, subCategory);
+            statement.setObject(8, subCategory);
+
+            ResultSet row = statement.executeQuery();
+
+            while (row.next())
+            {
+                products.add(mapRow(row));
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return products;
     }
+
 
     @Override
     public List<Product> listByCategoryId(int categoryId)

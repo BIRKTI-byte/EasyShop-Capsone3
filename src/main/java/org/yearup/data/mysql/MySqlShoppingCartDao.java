@@ -27,7 +27,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
 
         // SQL query to join shopping cart with products
         String sql = "SELECT sc.product_id, sc.quantity, " +
-                "p.name, p.price, p.category_id, p.description, p.sub_category, p.stock, p.image_url, p.featured " +
+                "p.name, p.price, p.category_id, p.description, p.subcategory, p.stock, p.image_url, p.featured " +
                 "FROM shopping_cart sc " +
                 "JOIN products p ON sc.product_id = p.product_id " +
                 "WHERE sc.user_id = ?";
@@ -41,20 +41,20 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
                 while (rs.next()) {
                     // Create Product object from database
                     Product product = new Product();
-                    product.setProductId(rs.getInt("sc.product_id"));
-                    product.setName(rs.getString("p.name"));
-                    product.setPrice(rs.getBigDecimal("p.price"));
-                    product.setCategoryId(rs.getInt("p.category_id"));
-                    product.setDescription(rs.getString("p.description"));
-                    product.setSubCategory(rs.getString("p.sub_category"));
-                    product.setStock(rs.getInt("p.stock"));
-                    product.setImageUrl(rs.getString("p.image_url"));
-                    product.setFeatured(rs.getBoolean("p.featured"));
+                    product.setProductId(rs.getInt("product_id"));
+                    product.setName(rs.getString("name"));
+                    product.setPrice(rs.getBigDecimal("price"));
+                    product.setCategoryId(rs.getInt("category_id"));
+                    product.setDescription(rs.getString("description"));
+                    product.setSubCategory(rs.getString("subcategory"));
+                    product.setStock(rs.getInt("stock"));
+                    product.setImageUrl(rs.getString("image_url"));
+                    product.setFeatured(rs.getBoolean("featured"));
 
                     // Create ShoppingCartItem and assign product and quantity
                     ShoppingCartItem item = new ShoppingCartItem();
                     item.setProduct(product);
-                    item.setQuantity(rs.getInt("sc.quantity")); // Set quantity from database
+                    item.setQuantity(rs.getInt("quantity"));
                     // discountPercent is default 0, no need to set
 
                     // Add item to cart map (key = productId)

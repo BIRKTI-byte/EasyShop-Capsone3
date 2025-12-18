@@ -46,6 +46,7 @@ public class ShoppingCartController
         }
         catch(Exception e)
         {
+            e.printStackTrace(); // This will show the real error in console
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
     }

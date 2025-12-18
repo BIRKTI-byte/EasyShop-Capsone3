@@ -95,13 +95,41 @@ class ShoppingCartService {
         button.addEventListener("click", () => this.clearCart());
         cartHeader.appendChild(button)
 
+        const checkoutButton = document.createElement("button");
+        checkoutButton.classList.add("btn")
+        checkoutButton.classList.add("btn-success")
+        checkoutButton.innerText = "Checkout";
+        checkoutButton.style.marginLeft = "10px";
+        checkoutButton.addEventListener("click", () => this.checkout());
+        cartHeader.appendChild(checkoutButton)
+
         contentDiv.appendChild(cartHeader)
         main.appendChild(contentDiv);
 
         // let parent = document.getElementById("cart-item-list");
-        this.cart.items.forEach(item => {
+        Object.values(this.cart.items).forEach(item => {
             this.buildItem(item, contentDiv)
         });
+
+        // Add cart summary (total items and total price)
+        const summaryDiv = document.createElement("div");
+        summaryDiv.style.marginTop = "20px";
+        summaryDiv.style.padding = "15px";
+        summaryDiv.style.backgroundColor = "#f8f9fa";
+        summaryDiv.style.borderRadius = "5px";
+        summaryDiv.style.fontWeight = "bold";
+
+        const itemCount = Object.keys(this.cart.items).length;
+        const totalItems = Object.values(this.cart.items).reduce((sum, item) => sum + item.quantity, 0);
+        
+        summaryDiv.innerHTML = `
+            <div style="font-size: 18px;">
+                <div>Total Items: ${totalItems} (${itemCount} unique products)</div>
+                <div style="font-size: 24px; color: #28a745; margin-top: 10px;">Cart Total: $${this.cart.total.toFixed(2)}</div>
+            </div>
+        `;
+        
+        contentDiv.appendChild(summaryDiv);
     }
 
     buildItem(item, parent)
@@ -118,7 +146,7 @@ class ShoppingCartService {
         let photoDiv = document.createElement("div");
         photoDiv.classList.add("photo")
         let img = document.createElement("img");
-        img.src = `/images/products/${item.product.imageUrl}`
+        img.src = `images/products/${item.product.imageUrl}`
         img.addEventListener("click", () => {
             showImageDetailForm(item.product.name, img.src)
         })
@@ -136,6 +164,13 @@ class ShoppingCartService {
         let quantityDiv = document.createElement("div")
         quantityDiv.innerText = `Quantity: ${item.quantity}`;
         outerDiv.appendChild(quantityDiv)
+
+        let lineTotalDiv = document.createElement("div");
+        lineTotalDiv.style.fontWeight = "bold";
+        lineTotalDiv.style.fontSize = "18px";
+        lineTotalDiv.style.marginTop = "10px";
+        lineTotalDiv.innerText = `Line Total: $${item.lineTotal.toFixed(2)}`;
+        outerDiv.appendChild(lineTotalDiv);
 
 
         parent.appendChild(outerDiv);
@@ -169,6 +204,40 @@ class ShoppingCartService {
                      error: "Empty cart failed."
                  };
 
+                 templateBuilder.append("error", data, "errors")
+             })
+    }
+
+    checkout()
+    {
+        const url = `${config.baseUrl}/orders`;
+
+        axios.post(url)
+             .then(response => {
+                 // Clear local cart
+                 this.cart = {
+                     items: {},
+                     total: 0
+                 }
+
+                 // Show success message
+                 const data = {
+                     message: `Order #${response.data.orderId} created successfully! Your cart has been cleared.`
+                 };
+                 templateBuilder.append("message", data, "content")
+
+                 // Update cart display
+                 this.updateCartDisplay()
+                 
+                 // Reload the cart page to show empty cart
+                 setTimeout(() => {
+                     this.loadCartPage()
+                 }, 1500);
+             })
+             .catch(error => {
+                 const data = {
+                     error: error.response?.data?.message || "Checkout failed. Please try again."
+                 };
                  templateBuilder.append("error", data, "errors")
              })
     }

@@ -1,5 +1,7 @@
 package org.yearup.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
 public class Product
@@ -11,6 +13,7 @@ public class Product
     private String description;
     private String subCategory;
     private int stock;
+    @JsonProperty("featured")
     private boolean isFeatured;
     private String imageUrl;
 

@@ -9,9 +9,7 @@ A modern, full-stack e-commerce platform built with Spring Boot and MySQL, featu
 - ✅ **Product Catalog** - Browse products with filtering and search capabilities
 - ✅ **Shopping Cart** - Add/remove items, adjust quantities
 - ✅ **Selective Checkout** - Choose which items to checkout, leave others in cart
-- ✅ **Order Management** - Create and track orders with order line items
 - ✅ **User Profiles** - View and edit user profile information
-- ✅ **Category & Color Filtering** - Filter products by category and color
 - ✅ **Price Range Filtering** - Filter by minimum and maximum price
 
 ### User Interface

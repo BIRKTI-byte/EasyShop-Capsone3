@@ -15,11 +15,8 @@ A modern, full-stack e-commerce platform built with Spring Boot and MySQL, featu
 - ✅ **Price Range Filtering** - Filter by minimum and maximum price
 
 ### User Interface
-- 🎨 **Beautiful Gradient Design** - Purple gradient header and modern cards
-- 📱 **Responsive Layout** - Works on desktop and mobile devices
-- ✨ **Smooth Animations** - Hover effects and transitions
-- 🎯 **Intuitive Navigation** - Easy-to-use menu and checkout flow
-- 🛒 **Live Cart Counter** - Real-time cart item count in header
+- 🎨 **simple Design** - 
+- 📱 **Responsive Layout** 
 
 ## 🛠️ Technology Stack
 

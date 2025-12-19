@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -21,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 @Configuration
+@PropertySource("classpath:application.properties")
 public class TestDatabaseConfig
 {
     private final String serverUrl;
@@ -40,38 +42,17 @@ public class TestDatabaseConfig
         this.password = password;
     }
 
-    @PostConstruct
-    public void setup() {
-
-        try(Connection connection = DriverManager.getConnection(serverUrl + "/sys", username, password);
-            Statement statement = connection.createStatement();
-        )
-        {
-            statement.execute("DROP DATABASE IF EXISTS " + testDb + ";");
-            statement.execute("CREATE DATABASE " + testDb + ";");
-        }
-        catch (SQLException ignored) {}
+    // Initialize the database before creating the dataSource bean
+    @Bean
+    public TestDatabaseInitializer testDatabaseInitializer() throws SQLException {
+        return new TestDatabaseInitializer(serverUrl, testDb, username, password);
     }
-
-    @PreDestroy
-    public void cleanup() {
-
-        try(Connection connection = DriverManager.getConnection(serverUrl + "/sys", username, password);
-            Statement statement = connection.createStatement();
-        )
-        {
-            statement.execute("DROP DATABASE IF EXISTS " + testDb + ";");
-        }
-        catch (SQLException ignored){}
-
-    }
-
 
     @Bean
-    public DataSource dataSource() throws SQLException, IOException
+    public DataSource dataSource(TestDatabaseInitializer initializer) throws SQLException, IOException
     {
         SingleConnectionDataSource dataSource = new SingleConnectionDataSource();
-        dataSource.setUrl(String.format("%s/%s", serverUrl, testDb));
+        dataSource.setUrl(serverUrl + testDb);
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         dataSource.setAutoCommit(false);
@@ -83,5 +64,38 @@ public class TestDatabaseConfig
         dataSource.getConnection().commit();
 
         return dataSource;
+    }
+
+    @PreDestroy
+    public void cleanup() {
+
+        try(Connection connection = DriverManager.getConnection(serverUrl.replaceAll("/$", ""), username, password);
+            Statement statement = connection.createStatement();
+        )
+        {
+            statement.execute("DROP DATABASE IF EXISTS " + testDb + ";");
+        }
+        catch (SQLException ignored){}
+
+    }
+
+    // Inner class to handle database initialization
+    public static class TestDatabaseInitializer {
+        public TestDatabaseInitializer(String serverUrl, String testDb, String username, String password) throws SQLException {
+            // Connect without specifying a database (just to server)
+            String connectionUrl = serverUrl.replaceAll("/$", ""); // Remove trailing slash if present
+            try(Connection connection = DriverManager.getConnection(connectionUrl, username, password);
+                Statement statement = connection.createStatement();
+            )
+            {
+                statement.execute("DROP DATABASE IF EXISTS " + testDb + ";");
+                statement.execute("CREATE DATABASE " + testDb + ";");
+                System.out.println("Test database created successfully: " + testDb);
+            }
+            catch (SQLException e) {
+                System.err.println("Failed to create test database: " + e.getMessage());
+                throw e;
+            }
+        }
     }
 }

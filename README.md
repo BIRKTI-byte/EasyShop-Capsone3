@@ -709,6 +709,46 @@ src/main/
 │           └── products/                  # Product images
 └── test/                                  # Unit tests
 ```
+Screenshots of insominia testing 
+
+
+
+
+
+
+<img width="1756" height="872" alt="Screenshot 2025-12-18 220955" src="https://github.com/user-attachments/assets/313a02bc-f8f0-4fe4-aed7-f9a81b684a3f" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+<img width="1760" height="924" alt="Screenshot 2025-12-18 221014" src="https://github.com/user-attachments/assets/e5dbe5cc-8f92-44e6-9e01-a3b55f991494" />
+
+
+
+
+
+
+
+
+
+
+<img width="1814" height="892" alt="Screenshot 2025-12-18 221451" src="https://github.com/user-attachments/assets/4e8f203b-57f5-4d7f-b7c0-b2a85a57c02b" />
+
+
+
+
+
+
+
 
 ---
 

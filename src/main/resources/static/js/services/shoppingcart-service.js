@@ -137,6 +137,25 @@ class ShoppingCartService {
         let outerDiv = document.createElement("div");
         outerDiv.classList.add("cart-item");
 
+        // Add checkbox for item selection
+        let checkboxDiv = document.createElement("div");
+        checkboxDiv.style.marginBottom = "10px";
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = true;  // Select all items by default
+        checkbox.id = `checkbox-${item.product.productId}`;
+        checkbox.style.cursor = "pointer";
+        checkbox.style.width = "20px";
+        checkbox.style.height = "20px";
+        checkbox.style.marginRight = "10px";
+        let checkboxLabel = document.createElement("label");
+        checkboxLabel.htmlFor = checkbox.id;
+        checkboxLabel.innerText = "Select for checkout";
+        checkboxLabel.style.cursor = "pointer";
+        checkboxDiv.appendChild(checkbox);
+        checkboxDiv.appendChild(checkboxLabel);
+        outerDiv.appendChild(checkboxDiv);
+
         let div = document.createElement("div");
         outerDiv.appendChild(div);
         let h4 = document.createElement("h4")
@@ -210,26 +229,49 @@ class ShoppingCartService {
 
     checkout()
     {
+        // Get only CHECKED product IDs from cart
+        const selectedProductIds = [];
+        Object.keys(this.cart.items).forEach(productId => {
+            const checkbox = document.getElementById(`checkbox-${productId}`);
+            if (checkbox && checkbox.checked) {
+                selectedProductIds.push(parseInt(productId));
+            }
+        });
+        
+        if (selectedProductIds.length === 0) {
+            alert("Please select items to checkout!");
+            return;
+        }
+
+        const itemCount = selectedProductIds.length;
+        const totalItems = selectedProductIds.reduce((sum, pid) => sum + this.cart.items[pid].quantity, 0);
+        const selectedTotal = selectedProductIds.reduce((sum, pid) => sum + (this.cart.items[pid].product.price * this.cart.items[pid].quantity), 0);
+        
+        const confirmed = confirm(
+            `Ready to place your order?\n\n` +
+            `Items: ${totalItems} (${itemCount} products)\n` +
+            `Total: $${selectedTotal.toFixed(2)}\n\n` +
+            `Click OK to confirm your order.`
+        );
+
+        if (!confirmed) {
+            return; // User cancelled
+        }
+
         const url = `${config.baseUrl}/orders`;
 
-        axios.post(url)
+        axios.post(url, { selectedProductIds: selectedProductIds })
              .then(response => {
-                 // Clear local cart
-                 this.cart = {
-                     items: {},
-                     total: 0
-                 }
+                 // Reload cart from server
+                 this.loadCart();
 
                  // Show success message
                  const data = {
-                     message: `Order #${response.data.orderId} created successfully! Your cart has been cleared.`
+                     message: `✓ Order #${response.data.orderId} placed successfully!\n\nYour order has been confirmed.`
                  };
                  templateBuilder.append("message", data, "content")
-
-                 // Update cart display
-                 this.updateCartDisplay()
                  
-                 // Reload the cart page to show empty cart
+                 // Reload the cart page after a brief delay
                  setTimeout(() => {
                      this.loadCartPage()
                  }, 1500);

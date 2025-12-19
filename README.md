@@ -24,19 +24,21 @@ A modern, full-stack e-commerce platform built with Spring Boot and MySQL, featu
 ## 🛠️ Technology Stack
 
 ### Backend
-- **Java 17** - Programming language
-- **Spring Boot 2.7.3** - Application framework
-- **Spring Security** - Authentication and authorization
-- **Spring Data JPA** - Data persistence
-- **MySQL 8.0.33** - Database
-- **Maven** - Build tool
+- **Java 17 LTS** - Modern, stable Java version with long-term support
+- **Spring Boot 2.7.3** - Rapid application development framework with embedded Tomcat
+- **Spring Security** - Comprehensive authentication and authorization framework
+- **Spring Data JPA** - Simplified data persistence layer (using JDBC in this project)
+- **JWT (JSON Web Tokens)** - Token-based authentication mechanism for stateless API requests
+- **MySQL 8.0.33** - Relational database for persistent data storage
+- **Maven 3.9+** - Project build and dependency management tool
 
 ### Frontend
-- **HTML5** - Structure
-- **CSS3** - Styling with gradients and animations
-- **JavaScript (ES6+)** - Interactivity
-- **Axios** - HTTP requests
-- **Mustache** - Templating
+- **HTML5** - Semantic markup and structure
+- **CSS3** - Modern styling with flexbox layouts
+- **JavaScript (ES6+)** - Client-side interactivity and DOM manipulation
+- **Axios** - Promise-based HTTP client for REST API calls
+- **Mustache Templates** - Server-side template rendering for dynamic HTML
+- **Bootstrap 5** - Responsive framework utilities (included in dependencies)
 
 ## 📋 Prerequisites
 
@@ -125,29 +127,152 @@ src/
 
 ## 🔌 API Endpoints
 
-### Products
-- `GET /products` - Get all products (with optional filtering)
-- `GET /products/{id}` - Get product by ID
-- `GET /products/category/{categoryId}` - Get products by category
+All endpoints require JWT authentication (Bearer token in Authorization header) except login/registration endpoints.
 
-### Shopping Cart
-- `GET /cart` - Get current user's shopping cart
-- `POST /cart/products/{productId}` - Add product to cart
-- `PUT /cart/products/{productId}` - Update product quantity
-- `DELETE /cart` - Clear entire cart
-- `DELETE /cart/products/{productId}` - Remove specific product
+### Products
+- **`GET /products`** - Retrieve all products with optional query parameters
+  - Query params: `categoryId`, `maxPrice`, `minPrice`, `color`
+  - Example: `GET /products?categoryId=1&minPrice=10&maxPrice=100`
+  - Returns: Array of Product objects with id, name, description, price, category, color, image URL
+
+- **`GET /products/{id}`** - Get detailed information for a specific product
+  - Path param: `id` - Product ID
+  - Returns: Single Product object with all details
+
+- **`GET /products/category/{categoryId}`** - Get all products in a specific category
+  - Path param: `categoryId` - Category ID
+  - Returns: Array of Product objects filtered by category
+
+- **`POST /products`** - Create a new product (admin-only)
+  - Request body: Product JSON object
+  - Returns: Created Product object
+ the Application
+
+### 1. Login to Your Account
+- Enter your username and password on the login form
+- Test credentials: `admin` / `password`
+- JWT token is generated upon successful login and stored in browser
+- Token is automatically sent with all subsequent API requests via Authorization header
+
+### 2. Browse the Product Catalog
+- The home page displays all available products in a responsive grid
+- Products show image, name, price, and category information
+- Use the filter sidebar to narrow down your search
+
+### 3. Filter Products
+- **By Category**: Select from available product categories using the category dropdown
+- **By Color**: Filter products by available colors (displays matching products only)
+- **By Price Range**: Use the price slider to set minimum and maximum price
+- Filters update product display in real-time as you adjust them
+
+### 4. View Product Details
+- Click on any product image or name to see full details
+- View comprehensive product information including description, specifications, and pricing
+
+### 5. Add Items to Shopping Cart
+- Click the "Add to Cart" button on any product
+- Specify the quantity you want to purchase (default: 1)
+- Product is immediately added to your cart
+- Cart counter in the header updates in real-time
+
+### 6. Manage Your Shopping Cart
+- Click the cart icon in the header to view your shopping cart
+- **View All Items**: See all products you've added with quantities and prices
+- **Update Quantities**: Change the quantity of any item or remove it completely
+- **Remove Items**: Click delete button next to any item to remove it
+- **Clear Cart**: Clear all items at once to start over
+- **Item Subtotals**: See calculated total for each item (price × quantity)
+- **Cart Summary**: View total items and total price at the bottom
+
+### 7. Proceed to Checkout
+- Review your cart items and quantities
+- Click the "Checkout" button to proceed
+- Order is created with items from your cart
+- Use your profile shipping address for delivery
+
+### 8. Confirm and Complete Order
+- Order is processed immediately upon checkout
+- Ordered items are removed from your cart
+- Any items you didn't order remain in cart for future purchasing
+- Order confirmation shows order ID and order date
+
+### 9. Manage Your Profile
+- Click "Profile" or user menu in the header
+- View your current profile information
+- Edit your shipping address:
+  - First Name and Last Name
+  - Street Address
+  - City, State, ZIP code
+  - Phone Number
+- Click "Save Changes" to update profile
+- Profile information is used as shipping address when you create orderst object
+
+- **`DELETE /cart/products/{productId}`** - Remove a specific product from the cart
+  - Path param: `productId` - Product ID to remove
+  - Returns: Updated ShoppingCart object
 
 ### Orders
-- `POST /orders` - Create order from cart (selective checkout supported)
+- **`POST /orders`** - Create an order from current shopping cart items
+  - Request body: Optional CheckoutRequest with selectedProductIds (for selective checkout)
+  - Request format: `{ "selectedProductIds": [1, 2, 3] }`
+  - Process:
+    1. Creates an Order with user's profile shipping address
+    2. Creates OrderLineItems for each cart item
+    3. Removes only the ordered items from the shopping cart
+    4. Unordered items remain in cart for future checkout
+  - Returns: Created Order object with orderId, date, and shipping details
 
 ### User Profile
-- `GET /profile` - Get current user's profile
-- `PUT /profile` - Update user profile
+- **`GET /profile`** - Retrieve current authenticated user's profile
+  - Returns: Profile object with firstName, lastName, address, city, state, zip, phone
 
-## 🛍️ How to Use
+- **`PUT /profile`** - Update current user's profile information
+  - Request body: Profile JSON with fields to update
+  - Example body:
+    ```json
+    {
+      "firstName": "John",
+      "lastName": "Doe",
+      "address": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10001",
+      "phone": "555-0123"
+    }
+    ```
+  - Returns: Updated Profile object
 
-### 1. Login
-- Enter credentials (admin/password for testing)
+### Categories
+- **`GET /categories`** - Retrieve all product categories
+  - Returns: Array of Category objects with id, name, description
+
+- **`GET /categories/{id}`** - Get specific category details
+  - Path param: `id` - Category ID
+  - Returns: Single Category object
+
+- **`GET /categories/{categoryId}/products`** - Get all products in a category
+  - Path param: `categoryId` - Category ID
+  - Returns: Array of Product objects in that category
+
+- **`POST /categories`** - Create a new category (admin-only)
+  - Request body: Category JSON object
+  - Returns: Created Category object
+
+- **`PUT /categories/{id}`** - Update a category (admin-only)
+  - Path param: `id` - Category ID
+  - Request body: Updated Category JSON
+  - Returns: Updated Category object
+
+- **`DELETE /categories/{id}`** - Delete a category (admin-only)
+  - Path param: `iAdd any product to your cart with custom quantities
+- **Adjust Quantities** - Increase or decrease item quantities directly in the cart
+- **Remove Individual Items** - Delete specific items from cart without affecting others
+- **Clear Entire Cart** - Remove all items at once with a single action
+- **Item Pricing Details** - See unit price, quantity, and line item subtotal for each product
+- **Real-time Cart Totals** - Displays total item count and total price
+- **Cart Persistence** - Cart items are saved in the database and persist between sessions
+- **Quantity Validation** - Prevents invalid quantities and maintains data integrity
+- **Quick Add from Product Page** - Add products directly from the product listing without navigating to car
 
 ### 2. Browse Products
 - Use filters to find products by category, color, and price
@@ -182,23 +307,40 @@ src/
 - **Cart Totals** - Shows total items and total price
 - **Cart Persistence** - Items remain in cart after partial checkout
 
-## 💳 Checkout Process
+## 💳Review Cart** - View all items, quantities, and prices in your shopping cart
+2. **Confirm Shipping Address** - Verify your profile shipping address will be used for delivery
+3. **Initiate Checkout** - Click "Checkout" button to create order
+4. **Order Creation** - System creates Order record with:
+   - Order ID (auto-generated)
+   - Current timestamp
+   - Your user ID
+   - Shipping address from profile
+   - All cart items as OrderLineItems
+5. **Cart Clearing** - All ordered items are removed from shopping cart
+6. *Layout Architecture
+- **Header Navigation** - Persistent header with EasyShop logo, navigation links, and cart counter
+- **Main Content Area** - Responsive product grid that adapts to screen size
+- **Sidebar Filters** - Collapsible filter panel for category, color, and price range
+- **Footer** - Application footer with additional information and links
 
-1. **Select Items** - Check/uncheck items for checkout
-2. **Review Order** - See items and total before confirming
-3. **Create Order** - Order is created with selected items only
-4. **Cart Update** - Selected items removed, unselected items remain
-5. **Order Confirmation** - Receive order confirmation with order ID
+### Visual Design
+- **Color Scheme**:
+  - Professional neutrals for backgrounds and text
+  - Color-coded action buttons (green for add, red for delete)
+  - Blue links for navigation
+  - Gray borders and dividers for section separation
+- **Typography**: Clean, readable fonts with clear visual hierarchy
+  - Large headings for section titles
+  - Medium-sized product names and prices
+  - Smaller gray text for secondary information
 
-## 🎨 UI Design
-
-### Color Scheme
-- **Primary:** Purple (#667eea to #764ba2 gradient)
-- **Success:** Green (for add/checkout actions)
-- **Danger:** Red (for delete/clear actions)
-- **Neutral:** Light gray backgrounds and borders
-
-### Typography
+### User Interface Components
+- **Product Cards** - Display product image, name, category, color, and price
+- **Filter Sidebar** - Category dropdown, color filter, and price range slider
+- **Shopping Cart Table** - Shows each item with image, name, quantity, price, and action buttons
+- **Input Forms** - Clean, accessible forms for login, registration, and profile updates
+- **Action Buttons** - Clearly labeled buttons for add to cart, checkout, save profile, etc.
+- **Status Messages** - Alerts and notifications for user
 - Modern, clean fonts
 - Clear hierarchy with weighted headings
 - Easy-to-read body text
@@ -212,17 +354,60 @@ src/
 
 ## 🧪 Testing
 
-### Run Tests
+### Run Unit Tests
 ```bash
 mvn test
 ```
 
-### Manual Testing
-1. Add 3 items to cart
-2. Uncheck 2 items in cart
-3. Click "Checkout"
-4. Verify only 1 item ordered
-5. Verify remaining 2 items stay in cart
+Available test classes:
+- `MySqlProductDaoTest.java` - Tests for product data access layer
+- `BaseDaoTestClass.java` - Base class for data access testing with test database setup
+
+### Manual Testing Checklist
+
+#### Authentication
+- [ ] Login with valid credentials (admin/password)
+- [ ] Try login with invalid credentials - should fail
+- [ ] Logout clears JWT token and redirects to login
+- [ ] Accessing protected pages without token redirects to login
+
+#### Product Browsing
+- [ ] All products load on home page
+- [ ] Product cards display image, name, category, and price
+- [ ] Product filters are visible and functional
+- [ ] Clicking product shows details in modal/detail view
+
+#### Product Filtering
+- [ ] Filter by category - only shows products in selected category
+- [ ] Filter by color - only shows products with selected color
+- [ ] Filter by price range - shows products within selected price range
+- [ ] Multiple filters work together (category AND color AND price)
+- [ ] Clear filters restores all products
+
+#### Shopping Cart
+- [ ] Add single item to cart - item appears in cart with quantity 1
+- [ ] Add same item twice - quantity increases to 2 (not duplicate entry)
+- [ ] Add multiple different items - all appear in cart
+- [ ] Cart counter in header updates correctly
+- [ ] Remove item from cart - item disappears
+- [ ] Update item quantity - cart updates correctly
+- [ ] Clear entire cart - all items removed
+- [ ] Cart persists after page refresh (stored in database)
+
+#### Checkout Process
+- [ ] Checkout with empty cart - shows error message
+- [ ] Checkout with items - order created successfully
+- [ ] Order has correct items, quantities, and prices
+- [ ] Order uses profile shipping address
+- [ ] Order ID is generated and unique
+- [ ] After checkout, cart is empty
+- [ ] Multiple checkouts create separate order records
+
+#### User Profile
+- [ ] View profile shows current user information
+- [ ] Edit profile fields - can modify name, address, city, state, zip, phone
+- [ ] Save profile - updates are persisted
+- [ ] Profile updates are reflected in new orders (shipping address)
 
 ## 🐛 Troubleshooting
 
@@ -238,40 +423,158 @@ taskkill /PID <PID> /F
 - Verify MySQL is running
 - Check database credentials in application.properties
 - Ensure database exists and is accessible
+� Order Management
 
-### CSS Not Loading
-- Hard refresh browser (Ctrl+Shift+R)
-- Clear browser cache
-- Check that static files are in target/classes/static/
+Each order contains the following information:
+- **Order ID** - Unique identifier (auto-generated)
+- **User ID** - Associated customer
+- **Order Date** - Timestamp of order creation
+- **Shipping Address** - Complete address from user's profile
+- **Shipping Amount** - Default set to $0.00
+- **Order Line Items** - Array of items ordered with:
+  - Order Line Item ID
+  - Product ID
+  - Sales Price (price at time of order)
+  - Quantity ordered
+  - Discount percentage applied
 
-## 📝 Database Schema
-
-### Tables
-- **users** - User accounts and authentication
-- **profiles** - User profile information (address, city, state, zip)
-- **products** - Product catalog
-- **shopping_cart** - Current user shopping carts
-- **orders** - Customer orders
-- **order_line_items** - Items in each order
-- **categories** - Product categories
-
-## 🔄 Partial Checkout Flow
-
-```
-[Shopping Cart]
-   ↓ (3 items)
-[Select Items]
-   ↓ (uncheck 1 item)
-[Checkout Selected]
-   ↓ (2 items selected)
-[Create Order] → Order #123 created
-   ↓
-[Remove Selected Items from DB]
-   ↓
-[1 Item Remains in Cart]
-```
+Orders are permanent records in the database and cannot be modified after creation.
 
 ## 📱 Responsive Design
+
+The application is built with responsive design principles:
+- **Desktop (1024px+)**: Full 3-column product grid with expanded sidebar
+- **Tablet (768px - 1023px)**: 2-column product grid with collapsible sidebar
+- **Mobile (below 768px)**: 1-column product grid with mobile-optimized navigation
+- **Navigation**: Hamburger menu on mobile devices
+- **Filter Sidebar**: Collapses to icon on smaller screens
+- **Product Cards**: Scale appropriately for all screen sizes
+- **Images**: Responsive sizing with proper aspect ratio maintenance
+[Select Items]
+   ↓ (uncheck 1 item)
+## 📚 Architecture Overview
+
+### Model-View-Controller (MVC) Pattern
+The application follows the classic MVC architecture:
+
+#### Models (Data Layer)
+Located in `src/main/java/org/yearup/models/`:
+- Represent the core business objects (User, Product, Order, ShoppingCart, etc.)
+- Plain Java classes with getters/setters (POJOs)
+- No business logic - just data containers
+
+#### Views (Presentation Layer)
+Located in `src/main/resources/static/`:
+- HTML templates rendered by Mustache template engine
+- CSS styling for layout and appearance
+- JavaScript for client-side interactivity
+
+#### Controllers (Application Layer)
+Located in `src/main/java/org/yearup/controllers/`:
+- REST API endpoints using Spring @RestController
+- Handle HTTP requests and responses
+- Delegate business logic to DAOs
+- Return JSON responses for API calls
+
+### Data Access Layer (DAO Pattern)
+Located in `src/main/java/org/yearup/data/`:
+- **Interfaces**: Define contracts for data operations (ProductDao, ShoppingCartDao, etc.)
+- **MySQL Implementations**: Concrete implementations using JDBC (MySqlProductDao, MySqlShoppingCartDao, etc.)
+- Handles all database queries and transactions
+- Provides CRUD operations for each entity
+
+### Security Layer
+Located in `src/main/java/org/yearup/security/`:
+- JWT token generation and validation (TokenProvider)
+- Spring Security configuration (WebSecurityConfig)
+- Authentication entry point and access denied handler
+- User details service for loading user information
+
+### Configuration Layer
+Located in `src/main/java/org/yearup/configurations/`:
+- Database connection configuration
+- Application-wide settings and beans
+- Dependency injection setup
+
+## 🔧 Development
+
+### Project Structure Details
+```
+src/main/
+├── java/org/yearup/
+│   ├── EasyshopApplication.java          # Spring Boot entry point
+│   ├── configurations/
+│   │   └── DatabaseConfig.java           # Database connection setup
+│   ├── controllers/
+│   │   ├── ProductsController.java       # Product endpoints
+│   │   ├── ShoppingCartController.java   # Cart endpoints
+│   │   ├── OrdersController.java         # Order endpoints
+│   │   ├── ProfileController.java        # Profile endpoints
+│   │   └── CategoriesController.java     # Category endpoints
+│   ├── data/
+│   │   ├── *Dao.java                     # DAO interfaces
+│   │   └── mysql/
+│   │       ├── MySql*Dao.java            # MySQL implementations
+│   │       └── ConnectionPool.java       # Connection management
+│   ├── models/
+│   │   ├── User.java
+│   │   ├── Product.java
+│   │   ├── Order.java
+│   │   ├── OrderLineItem.java
+│   │   ├── ShoppingCart.java
+│   │   └── Profile.java
+│   └── security/
+│       ├── jwt/
+│       │   ├── TokenProvider.java        # JWT token handling
+│       │   └── JWTConfigurer.java        # JWT configuration
+│       ├── WebSecurityConfig.java        # Security configuration
+│       └── User details service
+├── resources/
+│   ├── application.properties             # Configuration properties
+│   ├── banner.txt                         # Application startup banner
+│   └── static/
+│       ├── index.html                     # Main entry point
+│       ├── css/
+│       │   └── main.css                   # Application styling
+│       ├── js/
+│       │   ├── application.js             # Main app initialization
+│       │   ├── config.js                  # Client configuration
+│       │   ├── filter.js                  # Product filtering logic
+│       │   ├── template-builder.js        # Template rendering
+│       │   ├── services/
+│       │   │   ├── user-service.js        # Auth and user operations
+│       │   │   ├── product-service.js     # Product API calls
+│       │   │   └── shoppingcart-service.js # Cart operations
+│       │   └── lib/                       # Third-party libraries
+│       ├── templates/                     # HTML templates
+│       │   ├── home.html
+│       │   ├── product.html
+│       │   ├── cart.html
+│       │   ├── profile.html
+│       │   └── ...other templates
+│       └── images/
+│           └── products/                  # Product images
+└── test/                                  # Unit tests
+```
+
+---
+
+**Version:** 1.0.0  
+**Last Updated:** December 18, 2025  
+**Status:** Complete and Functional  
+**Java Version Required:** 17 LTS  
+**Spring Boot Version:** 2.7.3  
+**MySQL Version Required:** 8.0+]
+   ↓
+[1**JWT Token Authentication** - Stateless token-based authentication with token timeout
+- **Spring Security** - Comprehensive security framework with method-level access control
+- **Password Encryption** - User passwords are encrypted using Spring Security's password encoder
+- **CORS Protection** - Cross-Origin Resource Sharing properly configured with @CrossOrigin annotations
+- **SQL Injection Prevention** - All database queries use prepared statements with parameterized queries
+- **Authorization Checks** - @PreAuthorize annotations on protected endpoints
+- **User Isolation** - Users can only access their own cart, profile, and orders via Principal authentication
+- **Token Storage** - JWT tokens stored in browser local storage and sent via Authorization header
+- **Secure Endpoints** - Admin-only endpoints restricted to authorized user
 
 - Desktop: Full 3-column product grid
 - Tablet: 2-column product grid
@@ -302,6 +605,116 @@ For issues or questions:
 
 ---
 
+## 📚 Architecture Overview
+
+### Model-View-Controller (MVC) Pattern
+The application follows the classic MVC architecture:
+
+#### Models (Data Layer)
+Located in `src/main/java/org/yearup/models/`:
+- Represent the core business objects (User, Product, Order, ShoppingCart, etc.)
+- Plain Java classes with getters/setters (POJOs)
+- No business logic - just data containers
+
+#### Views (Presentation Layer)
+Located in `src/main/resources/static/`:
+- HTML templates rendered by Mustache template engine
+- CSS styling for layout and appearance
+- JavaScript for client-side interactivity
+
+#### Controllers (Application Layer)
+Located in `src/main/java/org/yearup/controllers/`:
+- REST API endpoints using Spring @RestController
+- Handle HTTP requests and responses
+- Delegate business logic to DAOs
+- Return JSON responses for API calls
+
+### Data Access Layer (DAO Pattern)
+Located in `src/main/java/org/yearup/data/`:
+- **Interfaces**: Define contracts for data operations (ProductDao, ShoppingCartDao, etc.)
+- **MySQL Implementations**: Concrete implementations using JDBC (MySqlProductDao, MySqlShoppingCartDao, etc.)
+- Handles all database queries and transactions
+- Provides CRUD operations for each entity
+
+### Security Layer
+Located in `src/main/java/org/yearup/security/`:
+- JWT token generation and validation (TokenProvider)
+- Spring Security configuration (WebSecurityConfig)
+- Authentication entry point and access denied handler
+- User details service for loading user information
+
+### Configuration Layer
+Located in `src/main/java/org/yearup/configurations/`:
+- Database connection configuration
+- Application-wide settings and beans
+- Dependency injection setup
+
+## 🔧 Development
+
+### Project Structure Details
+```
+src/main/
+├── java/org/yearup/
+│   ├── EasyshopApplication.java          # Spring Boot entry point
+│   ├── configurations/
+│   │   └── DatabaseConfig.java           # Database connection setup
+│   ├── controllers/
+│   │   ├── ProductsController.java       # Product endpoints
+│   │   ├── ShoppingCartController.java   # Cart endpoints
+│   │   ├── OrdersController.java         # Order endpoints
+│   │   ├── ProfileController.java        # Profile endpoints
+│   │   └── CategoriesController.java     # Category endpoints
+│   ├── data/
+│   │   ├── *Dao.java                     # DAO interfaces
+│   │   └── mysql/
+│   │       ├── MySql*Dao.java            # MySQL implementations
+│   │       └── ConnectionPool.java       # Connection management
+│   ├── models/
+│   │   ├── User.java
+│   │   ├── Product.java
+│   │   ├── Order.java
+│   │   ├── OrderLineItem.java
+│   │   ├── ShoppingCart.java
+│   │   └── Profile.java
+│   └── security/
+│       ├── jwt/
+│       │   ├── TokenProvider.java        # JWT token handling
+│       │   └── JWTConfigurer.java        # JWT configuration
+│       ├── WebSecurityConfig.java        # Security configuration
+│       └── User details service
+├── resources/
+│   ├── application.properties             # Configuration properties
+│   ├── banner.txt                         # Application startup banner
+│   └── static/
+│       ├── index.html                     # Main entry point
+│       ├── css/
+│       │   └── main.css                   # Application styling
+│       ├── js/
+│       │   ├── application.js             # Main app initialization
+│       │   ├── config.js                  # Client configuration
+│       │   ├── filter.js                  # Product filtering logic
+│       │   ├── template-builder.js        # Template rendering
+│       │   ├── services/
+│       │   │   ├── user-service.js        # Auth and user operations
+│       │   │   ├── product-service.js     # Product API calls
+│       │   │   └── shoppingcart-service.js # Cart operations
+│       │   └── lib/                       # Third-party libraries
+│       ├── templates/                     # HTML templates
+│       │   ├── home.html
+│       │   ├── product.html
+│       │   ├── cart.html
+│       │   ├── profile.html
+│       │   └── ...other templates
+│       └── images/
+│           └── products/                  # Product images
+└── test/                                  # Unit tests
+```
+
+---
+
 **Version:** 1.0.0  
 **Last Updated:** December 18, 2025  
-**Status:** Active Development
+**Status:** Complete and Functional  
+**Java Version Required:** 17 LTS  
+**Spring Boot Version:** 2.7.3  
+**MySQL Version Required:** 8.0+
